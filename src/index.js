@@ -4,6 +4,7 @@ const { Wit, log } = require('node-wit');
 const { Telegraf } = require('telegraf');
 const greetingsAndResponses = require('./greetings');
 const callResponses = require('./names');
+const { smallTalkResponses, getSmallTalkResponse } = require('./smallTalk');
 const error = require('./error');
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -25,29 +26,37 @@ bot.on('text', async (ctx) => {
   const msg = ctx.message.text;
   const wit = await witResponse(msg); // Get Wit.ai response
 
-  // Check for specific greetings
-  const specificGreeting = greetingsAndResponses.getSpecificResponse(msg);
+  // Check for small talk responses
+  const smallTalkResponse = getSmallTalkResponse(msg);
 
-  if (specificGreeting) {
-    ctx.reply(specificGreeting);
+  if (smallTalkResponse) {
+    ctx.reply(smallTalkResponse);
   } else {
-    // Check for calling
-    const callingResponse = callResponses.getCallResponse(msg);
+    // Check for specific greetings
+    const specificGreeting = greetingsAndResponses.getSpecificResponse(msg);
 
-    if (callingResponse) {
-      ctx.reply(callingResponse);
+    if (specificGreeting) {
+      ctx.reply(specificGreeting);
     } else {
-      // Handle traits simultaneously
-      let reply = await greetingsAndResponses.greetings.handleMessage(wit.entities, wit.traits);
+      // Check for calling
+      const callingResponse = callResponses.getCallResponse(msg);
 
-      if (!reply) {
-        reply = error.handleMessage();
+      if (callingResponse) {
+        ctx.reply(callingResponse);
+      } else {
+        // Handle traits simultaneously
+        let reply = await greetingsAndResponses.greetings.handleMessage(wit.entities, wit.traits);
+
+        if (!reply) {
+          reply = error.handleMessage();
+        }
+
+        ctx.reply(reply);
       }
-
-      ctx.reply(reply);
     }
   }
 });
+
 
 bot.launch();
 
@@ -64,4 +73,3 @@ async function witResponse(msg) {
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
