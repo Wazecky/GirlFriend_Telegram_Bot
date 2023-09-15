@@ -3,6 +3,12 @@ require('dotenv').config();
 const { Wit, log } = require('node-wit');
 const { Telegraf } = require('telegraf');
 const greetingsAndResponses = require('./greetings');
+const {
+  getPositiveSentimentResponse,
+  getNegativeSentimentResponse,
+  getNeutralSentimentResponse,
+} = require('./sentiments');
+
 const callResponses = require('./names');
 const { smallTalkResponses, getSmallTalkResponse } = require('./smallTalk');
 const error = require('./error');
@@ -44,19 +50,33 @@ bot.on('text', async (ctx) => {
       if (callingResponse) {
         ctx.reply(callingResponse);
       } else {
-        // Handle traits simultaneously
-        let reply = await greetingsAndResponses.greetings.handleMessage(wit.entities, wit.traits);
+        // Check for sentiment responses
+        let sentimentResponse = getPositiveSentimentResponse(msg);
 
-        if (!reply) {
-          reply = error.handleMessage();
+        if (!sentimentResponse) {
+          sentimentResponse = getNegativeSentimentResponse(msg);
         }
 
-        ctx.reply(reply);
+        if (!sentimentResponse) {
+          sentimentResponse = getNeutralSentimentResponse(msg);
+        }
+
+        if (sentimentResponse) {
+          ctx.reply(sentimentResponse);
+        } else {
+          // Handle traits simultaneously
+          let reply = await greetingsAndResponses.greetings.handleMessage(wit.entities, wit.traits);
+
+          if (!reply) {
+            reply = error.handleMessage();
+          }
+
+          ctx.reply(reply);
+        }
       }
     }
   }
 });
-
 
 bot.launch();
 
