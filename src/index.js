@@ -7,9 +7,10 @@ const {
   getPositiveSentimentResponse,
   getNegativeSentimentResponse,
   getNeutralSentimentResponse,
-} = require('./sentiments');
+} = require('./rawsentiments');
 
 const callResponses = require('./names');
+const { rawsmallTalkResponses, getrawSmallTalkResponse } = require('./rawsmallTalk');
 const { smallTalkResponses, getSmallTalkResponse } = require('./smallTalk');
 const error = require('./error');
 
@@ -32,47 +33,48 @@ bot.on('text', async (ctx) => {
   const msg = ctx.message.text;
   const wit = await witResponse(msg); // Get Wit.ai response
 
-  // Check for small talk responses
-  const smallTalkResponse = getSmallTalkResponse(msg);
+  // Check for small talk responses using rawsmallTalkResponses and getrawSmallTalkResponse
+  const rawSmallTalkResponse = getrawSmallTalkResponse(msg);
 
-  if (smallTalkResponse) {
-    ctx.reply(smallTalkResponse);
+  if (rawSmallTalkResponse) {
+    ctx.reply(rawSmallTalkResponse);
+    return; // Exit the function after responding to small talk
+  }
+
+  // Check for specific greetings
+  const specificGreeting = greetingsAndResponses.getSpecificResponse(msg);
+
+  if (specificGreeting) {
+    ctx.reply(specificGreeting);
   } else {
-    // Check for specific greetings
-    const specificGreeting = greetingsAndResponses.getSpecificResponse(msg);
+    // Check for calling
+    const callingResponse = callResponses.getCallResponse(msg);
 
-    if (specificGreeting) {
-      ctx.reply(specificGreeting);
+    if (callingResponse) {
+      ctx.reply(callingResponse);
     } else {
-      // Check for calling
-      const callingResponse = callResponses.getCallResponse(msg);
+      // Check for sentiment responses
+      let sentimentResponse = getPositiveSentimentResponse(msg);
 
-      if (callingResponse) {
-        ctx.reply(callingResponse);
+      if (!sentimentResponse) {
+        sentimentResponse = getNegativeSentimentResponse(msg);
+      }
+
+      if (!sentimentResponse) {
+        sentimentResponse = getNeutralSentimentResponse(msg);
+      }
+
+      if (sentimentResponse) {
+        ctx.reply(sentimentResponse);
       } else {
-        // Check for sentiment responses
-        let sentimentResponse = getPositiveSentimentResponse(msg);
+        // Handle traits simultaneously
+        let reply = await greetingsAndResponses.greetings.handleMessage(wit.entities, wit.traits);
 
-        if (!sentimentResponse) {
-          sentimentResponse = getNegativeSentimentResponse(msg);
+        if (!reply) {
+          reply = error.handleMessage();
         }
 
-        if (!sentimentResponse) {
-          sentimentResponse = getNeutralSentimentResponse(msg);
-        }
-
-        if (sentimentResponse) {
-          ctx.reply(sentimentResponse);
-        } else {
-          // Handle traits simultaneously
-          let reply = await greetingsAndResponses.greetings.handleMessage(wit.entities, wit.traits);
-
-          if (!reply) {
-            reply = error.handleMessage();
-          }
-
-          ctx.reply(reply);
-        }
+        ctx.reply(reply);
       }
     }
   }

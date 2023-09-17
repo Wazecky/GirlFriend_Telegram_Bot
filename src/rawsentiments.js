@@ -81,6 +81,19 @@ const neutralSentimentResponses = {
   "I'm feeling neutral": "Feeling neutral is a chance to explore different emotions. What's on your mind? 😊",
 };
 
+const firstValue = (obj, key) => {
+  const val =
+    obj &&
+    obj[key] &&
+    Array.isArray(obj[key]) &&
+    obj[key].length > 0 &&
+    obj[key][0].value;
+  if (!val) {
+    return null;
+  }
+  return val;
+};
+
 const getPositiveSentimentResponse = (sentiment) => {
   const lowercaseSentiment = sentiment.toLowerCase();
   const keys = Object.keys(positiveSentimentResponses);
