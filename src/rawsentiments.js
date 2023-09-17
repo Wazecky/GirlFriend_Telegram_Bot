@@ -81,69 +81,68 @@ const neutralSentimentResponses = {
   "I'm feeling neutral": "Feeling neutral is a chance to explore different emotions. What's on your mind? 😊",
 };
 
-const firstValue = (obj, key) => {
-  const val =
-    obj &&
-    obj[key] &&
-    Array.isArray(obj[key]) &&
-    obj[key].length > 0 &&
-    obj[key][0].value;
-  if (!val) {
-    return null;
-  }
-  return val;
-};
-
-const getPositiveSentimentResponse = (sentiment) => {
-  const lowercaseSentiment = sentiment.toLowerCase();
-  const keys = Object.keys(positiveSentimentResponses);
-
-  // Calculate similarities and find the best match
-  const matches = stringSimilarity.findBestMatch(lowercaseSentiment, keys);
-  const bestMatch = matches.bestMatch;
-
-  // Check if the best match has a similarity score above a certain threshold
-  if (bestMatch.rating >= 0.8) {
-    return positiveSentimentResponses[bestMatch.target] || null;
+const getrawPositiveSentimentResponse = (sentiment) => {
+  if (sentiment) {
+    const lowercaseSentiment = sentiment.toLowerCase();
+    const keys = Object.keys(positiveSentimentResponses);
+  
+    // Calculate similarities and find the best match
+    const matches = stringSimilarity.findBestMatch(lowercaseSentiment, keys);
+    const bestMatch = matches.bestMatch;
+  
+    // Check if the best match has a similarity score above a certain threshold
+    if (bestMatch.rating >= 0.8) {
+      return positiveSentimentResponses[bestMatch.target] || null;
+    } else {
+      return null; // No close match found
+    }
   } else {
-    return null; // No close match found
+    return null; // Handle the case when sentiment is undefined or null
   }
 };
 
-const getNegativeSentimentResponse = (sentiment) => {
-  const lowercaseSentiment = sentiment.toLowerCase();
-  const keys = Object.keys(negativeSentimentResponses);
-
-  // Calculate similarities and find the best match
-  const matches = stringSimilarity.findBestMatch(lowercaseSentiment, keys);
-  const bestMatch = matches.bestMatch;
-
-  // Check if the best match has a similarity score above a certain threshold
-  if (bestMatch.rating >= 0.8) {
-    return negativeSentimentResponses[bestMatch.target] || null;
+const getrawNegativeSentimentResponse = (sentiment) => {
+  if (sentiment) {
+    const lowercaseSentiment = sentiment.toLowerCase();
+    const keys = Object.keys(negativeSentimentResponses);
+  
+    // Calculate similarities and find the best match
+    const matches = stringSimilarity.findBestMatch(lowercaseSentiment, keys);
+    const bestMatch = matches.bestMatch;
+  
+    // Check if the best match has a similarity score above a certain threshold
+    if (bestMatch.rating >= 0.8) {
+      return negativeSentimentResponses[bestMatch.target] || null;
+    } else {
+      return null; // No close match found
+    }
   } else {
-    return null; // No close match found
+    return null; // Handle the case when sentiment is undefined or null
   }
 };
 
-const getNeutralSentimentResponse = (sentiment) => {
-  const lowercaseSentiment = sentiment.toLowerCase();
-  const keys = Object.keys(neutralSentimentResponses);
-
-  // Calculate similarities and find the best match
-  const matches = stringSimilarity.findBestMatch(lowercaseSentiment, keys);
-  const bestMatch = matches.bestMatch;
-
-  // Check if the best match has a similarity score above a certain threshold
-  if (bestMatch.rating >= 0.8) {
-    return neutralSentimentResponses[bestMatch.target] || null;
+const getrawNeutralSentimentResponse = (sentiment) => {
+  if (sentiment) {
+    const lowercaseSentiment = sentiment.toLowerCase();
+    const keys = Object.keys(neutralSentimentResponses);
+  
+    // Calculate similarities and find the best match
+    const matches = stringSimilarity.findBestMatch(lowercaseSentiment, keys);
+    const bestMatch = matches.bestMatch;
+  
+    // Check if the best match has a similarity score above a certain threshold
+    if (bestMatch.rating >= 0.8) {
+      return neutralSentimentResponses[bestMatch.target] || null;
+    } else {
+      return null; // No close match found
+    }
   } else {
-    return null; // No close match found
+    return null; // Handle the case when sentiment is undefined or null
   }
 };
 
 module.exports = {
-  getPositiveSentimentResponse,
-  getNegativeSentimentResponse,
-  getNeutralSentimentResponse,
+  getrawPositiveSentimentResponse,
+  getrawNegativeSentimentResponse,
+  getrawNeutralSentimentResponse,
 };
