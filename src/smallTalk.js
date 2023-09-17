@@ -69,12 +69,19 @@ const smallTalkResponses = {
 };
 
 const getSmallTalkResponse = (intent) => {
-  const responses = smallTalkResponses[intent];
+  const lowercaseIntent = intent.toLowerCase();
+  const keys = Object.keys(smallTalkResponses);
 
-  if (responses) {
+  // Calculate similarities and find the best match
+  const matches = stringSimilarity.findBestMatch(lowercaseIntent, keys);
+  const bestMatch = matches.bestMatch;
+
+  // Check if the best match has a similarity score above a certain threshold
+  if (bestMatch.rating >= 0.8) {
+    const responses = smallTalkResponses[bestMatch.target];
     return responses[Math.floor(Math.random() * responses.length)];
   } else {
-    return null; // No relevant small talk response found for the given intent
+    return null; // No close match found or no relevant small talk response found for the given intent
   }
 };
 

@@ -22,10 +22,18 @@ const getSentimentResponse = (intent) => {
   const responses = sentimentResponses[intent];
 
   if (responses) {
-    return responses[Math.floor(Math.random() * responses.length)];
-  } else {
-    return null; // No relevant sentiment response found for the given intent
+    // Calculate similarities and find the best match
+    const lowercaseIntent = intent.toLowerCase();
+    const keys = Object.keys(sentimentResponses);
+    const matches = stringSimilarity.findBestMatch(lowercaseIntent, keys);
+    const bestMatch = matches.bestMatch;
+
+    // Check if the best match has a similarity score above a certain threshold
+    if (bestMatch.rating >= 0.8) {
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
   }
+  return null; // No close match found or no relevant sentiment response found for the given intent
 };
 
 module.exports = {

@@ -1,7 +1,6 @@
 const stringSimilarity = require('string-similarity');
 
 const rawsmallTalkResponses = {
-  //"hi": "Hello! 😊",
   "what's up": "Not much, just chatting with you, my love! ❤️",
   "long time no see": "I missed you so much! It's been too long. 😔",
   "how is it going": "It's going well, especially now that I'm talking to you, my love! 😍",
@@ -28,28 +27,25 @@ const rawsmallTalkResponses = {
   "love you": "Love you too! ❤️ You brighten up my day with your love. 😘",
   "i adore you": "I adore you as well! ❤️ You're so special to me. 😍",
   "adore you": "I adore you too! ❤️ Your presence makes my day amazing. 😊",
-  // Add more engaging small talk responses and questions here
 };
 
-  const getrawSmallTalkResponse = (message) => {
-    const lowercaseMessage = message.toLowerCase();
-    const keys = Object.keys(rawsmallTalkResponses);
+const getrawSmallTalkResponse = (message) => {
+  const lowercaseMessage = message.toLowerCase();
+  const keys = Object.keys(rawsmallTalkResponses);
 
-    // Calculate similarities and find the best match
-    const matches = stringSimilarity.findBestMatch(lowercaseMessage, keys);
-    const bestMatch = matches.bestMatch;
+  // Calculate similarities and find the best match
+  const matches = stringSimilarity.findBestMatch(lowercaseMessage, keys);
+  const bestMatch = matches.bestMatch;
 
-    // Check if the best match has a similarity score above a certain threshold
-    if (bestMatch.rating >= 0.8) {
-        return rawsmallTalkResponses[bestMatch.target] || null;
-    } else {
-        return null;
-    }
+  // Check if the best match has a similarity score above a certain threshold
+  if (bestMatch.rating >= 0.8) {
+    return rawsmallTalkResponses[bestMatch.target] || null;
+  } else {
+    return null;
+  }
 };
-  
+
 module.exports = {
   rawsmallTalkResponses,
   getrawSmallTalkResponse, // Add this line to export the function
 };
-
-  
