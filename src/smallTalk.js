@@ -112,6 +112,16 @@ const smallTalkResponses = {
     "Farewell, dear friend! Until next time. 😘",
     "Wishing you a fantastic day ahead! Goodbye! 🌟",
     "It's been a pleasure chatting with you. Until we meet again! 😄",
+    "Goodbye! Take care and have a wonderful day.",
+    "See you later! Don't be a stranger.",
+    "Farewell, my friend! Until we meet again.",
+    "Take care of yourself and goodbye for now!",
+    "Until next time! Stay safe and be well.",
+    "Goodbye, my friend. It was a pleasure chatting with you.",
+    "Catch you later! Feel free to return whenever you like.",
+    "Bye-bye! Remember, I'm just a message away if you need anything.",
+    "Have a great day ahead! Goodbye for now.",
+    "Adios! Wishing you all the best until we talk again.",
   ],
   // New intents and responses
   SeekAdvice: [
@@ -245,6 +255,7 @@ const smallTalkResponses = {
     "Spending time with you is the highlight of my day.",
     "You have a way of making everything more beautiful. 😌",
   ],
+  
 };
 
 const getSmallTalkResponse = (intent) => {
