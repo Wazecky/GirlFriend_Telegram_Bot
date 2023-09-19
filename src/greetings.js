@@ -13,7 +13,22 @@ const greetingsResponses = {
     "Hi honey, What's good with you?",
     "Hello to you too sweetheart?",
     "Hey, glad to see you again! I missed you babe",
-    "Hi hun, how are you doing?"
+    "Hi hun, how are you doing?",
+    "Hello there! How's your day been?",
+    "Hi dear! What can I assist you with today?",
+    "Hey! It's great to chat with you again!",
+    "Hello, my friend! How have you been lately?",
+    "Hi there! Ready for some interesting conversation?",
+    "Hey love! Tell me, what's on your mind?",
+    "Hi! How's the weather at your end?",
+    "Hello, sunshine! What's new in your world?",
+    "Hiya! How has life been treating you lately?",
+    "Hey there! Anything exciting happening in your day?",
+    "Hi, my friend! How can I brighten your day today?",
+    "Hello, gorgeous! What's the latest in your life?",
+    "Hi! How's your day shaping up so far?",
+    "Hey, it's you! How's everything going on your side?",
+    "Hi, lovely! What's the word on the street?"
   ],
 };
 
