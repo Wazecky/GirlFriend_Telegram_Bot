@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const { Wit, log } = require('node-wit');
-//const { witResponse } = require('./wit'); 
+const emojiBot = require('./emojiBot'); 
 const { Telegraf } = require('telegraf');
 const greetingsAndResponses = require('./greetings');
 const { getSentimentResponse } = require('./sentiments');
@@ -31,8 +31,17 @@ bot.command('reset', (ctx) => {
 });
 
 bot.on('text', async (ctx) => {
+  
   const msg = ctx.message.text;
   const wit = await witResponse(msg); // Get Wit.ai response
+
+  const intent = emojiBot.detectIntent(msg);
+  const response = emojiBot.getResponse(intent);
+
+  if (response) {
+    ctx.reply(response);
+    return;
+  } 
 
   // Check for small talk responses using rawsmallTalkResponses and getrawSmallTalkResponse
   const rawSmallTalkResponse = getrawSmallTalkResponse(msg);
