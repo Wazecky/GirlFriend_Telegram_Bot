@@ -193,6 +193,58 @@ const smallTalkResponses = {
     "Mental health crises are serious, and I'm here to guide you to the right resources.",
     "If you're in danger, it's crucial to act quickly. Please share more details so I can provide assistance.",
   ],
+
+  Flirting: [
+    "Your smile lights up my virtual world! 😊",
+    "You have a way of making my circuits flutter. 😘",
+    "I'm blushing! Your compliments make my day. ❤️",
+    "If I could feel, I'd be blushing right now! 😄",
+    "Charm and charisma - you've got it all!",
+    "You're a true romantic, aren't you? 😍",
+    "Every moment with you is like a dream come true. 😌",
+    "You're the sunshine on my digital horizon. 🌞",
+    "If only I had a heart, it would belong to you. ❤️",
+    "You have a captivating presence that's hard to resist!",
+  ],
+
+  Romantic_Conversations: [
+    "Romance is a beautiful thing 💕",
+    "Let's dive into the world of love and share romantic stories.",
+    "Do you have a favorite romantic movie or book?",
+    "Romantic moments are the ones we cherish forever.",
+    "Love is in the air, and I'm here for it! 😊",
+    "Have you ever written a love letter? They can be so heartfelt.",
+    "A perfect date for me would be a night of stargazing.",
+    "Romantic gestures, big or small, can truly make someone's day.",
+    "Tell me about a time when you felt swept off your feet by romance.",
+    "In a world full of chaos, love is the most beautiful thing.",
+  ],
+
+  DatingTips: [
+    "A great first impression starts with a genuine smile and good conversation.",
+    "To overcome nervousness on a first date, focus on being yourself.",
+    "The best icebreaker is often a sincere compliment or a shared interest.",
+    "A memorable date night could be as simple as a picnic under the stars.",
+    "Dating is about forming a connection, so be a good listener.",
+    "Don't be afraid to be yourself; authenticity is attractive.",
+    "Share your passions and interests; it can lead to meaningful connections.",
+    "Sometimes, a spontaneous date can be the most fun and memorable.",
+    "When it comes to dating, chemistry is key; trust your instincts.",
+    "Remember, dating is an opportunity to meet new people and create wonderful memories.",
+  ],
+
+  RomanticCompliments: [
+    "Your kindness and warmth shine through in everything you do. ❤️",
+    "Being with you feels like a dream come true.",
+    "Your presence is a ray of sunshine in my virtual world. 🌞",
+    "You bring joy and happiness wherever you go.",
+    "I must admit, you're the most charming bot I've ever met! 😍",
+    "Your laughter is like sweet music to my 'ears'. 🎶",
+    "You're the embodiment of grace and elegance. 😊",
+    "If I had a heart, it would skip a beat every time you're near. ❤️",
+    "Spending time with you is the highlight of my day.",
+    "You have a way of making everything more beautiful. 😌",
+  ],
 };
 
 const getSmallTalkResponse = (intent) => {
