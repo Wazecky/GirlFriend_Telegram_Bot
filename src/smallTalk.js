@@ -69,20 +69,22 @@ const smallTalkResponses = {
 };
 
 const getSmallTalkResponse = (intent) => {
-  const lowercaseIntent = intent.toLowerCase();
-  const keys = Object.keys(smallTalkResponses);
+  if (intent) {
+    const lowercaseIntent = intent.toLowerCase();
+    const keys = Object.keys(smallTalkResponses);
 
-  // Calculate similarities and find the best match
-  const matches = stringSimilarity.findBestMatch(lowercaseIntent, keys);
-  const bestMatch = matches.bestMatch;
+    // Calculate similarities and find the best match
+    const matches = stringSimilarity.findBestMatch(lowercaseIntent, keys);
+    const bestMatch = matches.bestMatch;
 
-  // Check if the best match has a similarity score above a certain threshold
-  if (bestMatch.rating >= 0.8) {
-    const responses = smallTalkResponses[bestMatch.target];
-    return responses[Math.floor(Math.random() * responses.length)];
-  } else {
-    return null; // No close match found or no relevant small talk response found for the given intent
+    // Check if the best match has a similarity score above a certain threshold
+    if (bestMatch.rating >= 0.8) {
+      const responses = smallTalkResponses[bestMatch.target];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
   }
+
+  return null; // No close match found or no relevant small talk response found for the given intent
 };
 
 module.exports = {
