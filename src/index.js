@@ -30,18 +30,81 @@ bot.command('reset', (ctx) => {
   );
 });
 
-bot.on('text', async (ctx) => {
-  
-  const msg = ctx.message.text;
-  const wit = await witResponse(msg); // Get Wit.ai response
+const conversationContext = {};
+// Define an array of captions for photos
+const photoCaptions = [
+  'Here is a beautiful picture for you!',
+  'Here is another beautiful picture for you!',
+  // Add more captions as needed
+];
 
+const videoCaptions = [
+  'Here is an amazing video for you!',
+  'Here is another exciting video for you!',
+  'Here is a captivating video just for you!',
+  // Add more captions as needed
+];
+
+
+// Define arrays of keywords for photos and videos
+const photoKeywords = ['picture', 'image', 'pic', 'foto', 'snapshot', 'visual', 'photo'];
+const videoKeywords = ['video', 'clip', 'movie'];
+
+
+bot.on('text', async (ctx) => {
+  const msg = ctx.message.text;
+  const lowercaseMsg = msg.toLowerCase();
+
+  // Check if a picture or video has already been sent in this conversation
+  if (conversationContext[ctx.chat.id] === 'photo') {
+    // If a photo has already been sent, check if the user wants another one
+    if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
+      // Send another photo with a different caption
+      const captionIndex = conversationContext[`${ctx.chat.id}_photo_counter`] || 0;
+      const caption = photoCaptions[captionIndex % photoCaptions.length];
+      ctx.replyWithPhoto({
+        source: 'B:/Chatbot/Sara Diaz/pic1.jpg', // Replace with your local image path
+      }, {
+        caption,
+      });
+      // Update the conversation context to indicate a new photo has been sent
+      conversationContext[`${ctx.chat.id}_photo_counter`] = captionIndex + 1;
+    } else {
+      // Respond to other messages
+    }
+  } else if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
+    // Send the first photo with the initial caption
+    const initialCaption = 'Here is a beautiful picture for you!';
+    ctx.replyWithPhoto({
+      source: 'B:/Chatbot/Sara Diaz/pic1.jpg', // Replace with your local image path
+    }, {
+      caption: initialCaption,
+    });
+    // Set the conversation context to indicate a photo has been sent
+    conversationContext[ctx.chat.id] = 'photo';
+  } else if (videoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
+    // Send a video with a random caption from the videoCaptions array
+    const captionIndex = Math.floor(Math.random() * videoCaptions.length);
+    const videoCaption = videoCaptions[captionIndex];
+    ctx.reply("Working on your video...");
+    ctx.replyWithVideo({
+      source: 'B:/Chatbot/Sara Diaz/vid.mp4', // Replace with your local video path
+    }, {
+      caption: videoCaption,
+    });
+    // Set the conversation context to indicate a video has been sent
+    conversationContext[ctx.chat.id] = 'video';
+  } else {
+
+  // Continue with the rest of the code
+  const wit = await witResponse(msg); // Get Wit.ai response
   const intent = emojiBot.detectIntent(msg);
   const response = emojiBot.getResponse(intent);
 
   if (response) {
     ctx.reply(response);
     return;
-  } 
+  }
 
   // Check for small talk responses using rawsmallTalkResponses and getrawSmallTalkResponse
   const rawSmallTalkResponse = getrawSmallTalkResponse(msg);
@@ -105,6 +168,7 @@ bot.on('text', async (ctx) => {
         }
       }
     }
+  }
   }
 });
 
