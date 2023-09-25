@@ -11,7 +11,7 @@ const {
   getrawNeutralSentimentResponse,
 } = require('./rawsentiments');
 const callResponses = require('./names');
-const { rawsmallTalkResponses, getrawSmallTalkResponse } = require('./rawsmallTalk');
+const { getrawSmallTalkResponse } = require('./rawsmallTalk');
 const error = require('./error');
 const { getSmallTalkResponse } = require('./smallTalk');
 
@@ -50,10 +50,26 @@ const videoCaptions = [
 const photoKeywords = ['picture', 'image', 'pic', 'foto', 'snapshot', 'visual', 'photo'];
 const videoKeywords = ['video', 'clip', 'movie'];
 
+// ...
 
 bot.on('text', async (ctx) => {
   const msg = ctx.message.text;
   const lowercaseMsg = msg.toLowerCase();
+
+  // Check if the user explicitly requests a photo
+  if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
+    // Send a photo with a caption
+    const captionIndex = conversationContext[`${ctx.chat.id}_photo_counter`] || 0;
+    const caption = photoCaptions[captionIndex % photoCaptions.length];
+    ctx.replyWithPhoto({
+      source: 'B:/Chatbot/Sara Diaz/pic1.jpg', // Replace with your local image path
+    }, {
+      caption,
+    });
+    // Update the conversation context to indicate a new photo has been sent
+    conversationContext[`${ctx.chat.id}_photo_counter`] = captionIndex + 1;
+    return; // Exit the function after responding with a photo
+  }
 
   // Check if a picture or video has already been sent in this conversation
   if (conversationContext[ctx.chat.id] === 'photo') {
@@ -69,32 +85,12 @@ bot.on('text', async (ctx) => {
       });
       // Update the conversation context to indicate a new photo has been sent
       conversationContext[`${ctx.chat.id}_photo_counter`] = captionIndex + 1;
+      return; // Exit the function after responding with a photo
     } else {
-      // Respond to other messages
+      // Clear the conversation context if the user doesn't request another photo
+      conversationContext[ctx.chat.id] = null;
     }
-  } else if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
-    // Send the first photo with the initial caption
-    const initialCaption = 'Here is a beautiful picture for you!';
-    ctx.replyWithPhoto({
-      source: 'B:/Chatbot/Sara Diaz/pic1.jpg', // Replace with your local image path
-    }, {
-      caption: initialCaption,
-    });
-    // Set the conversation context to indicate a photo has been sent
-    conversationContext[ctx.chat.id] = 'photo';
-  } else if (videoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
-    // Send a video with a random caption from the videoCaptions array
-    const captionIndex = Math.floor(Math.random() * videoCaptions.length);
-    const videoCaption = videoCaptions[captionIndex];
-    ctx.reply("Working on your video...");
-    ctx.replyWithVideo({
-      source: 'B:/Chatbot/Sara Diaz/vid.mp4', // Replace with your local video path
-    }, {
-      caption: videoCaption,
-    });
-    // Set the conversation context to indicate a video has been sent
-    conversationContext[ctx.chat.id] = 'video';
-  } else {
+  }
 
   // Continue with the rest of the code
   const wit = await witResponse(msg); // Get Wit.ai response
@@ -169,8 +165,9 @@ bot.on('text', async (ctx) => {
       }
     }
   }
-  }
 });
+
+// ...
 
 bot.launch();
 

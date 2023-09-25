@@ -3,6 +3,7 @@ const stringSimilarity = require('string-similarity');
 const rawsmallTalkResponses = {
   "what's up": "Not much, just chatting with you, my love! ❤️",
   "long time no see": "I missed you so much! It's been too long. 😔",
+  "how are you": "I'm doing well, especially now that I'm talking to you, my love! 😍",
   "how is it going": "It's going well, especially now that I'm talking to you, my love! 😍",
   "how's it going": "It's going well, especially now that I'm talking to you, my love! 😘",
   "i missed you": "I missed you too! 😊 What have you been up to?",
@@ -27,6 +28,7 @@ const rawsmallTalkResponses = {
   "love you": "Love you too! ❤️ You brighten up my day with your love. 😘",
   "i adore you": "I adore you as well! ❤️ You're so special to me. 😍",
   "adore you": "I adore you too! ❤️ Your presence makes my day amazing. 😊",
+  "What do you do for work?": "I work at a cozy coffee shop, brewing delicious coffee for our wonderful customers. ☕",
 };
 
 const getrawSmallTalkResponse = (message) => {

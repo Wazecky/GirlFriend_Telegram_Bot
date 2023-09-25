@@ -8,6 +8,14 @@ const smallTalkResponses = {
     "You're truly remarkable! 😄",
     "Your positivity is contagious! Keep shining! ✨",
   ],
+  About: [
+    "I work at a cozy coffee shop, brewing delicious coffee for our wonderful customers. ☕",
+    "I'm a virtual assistant, here to assist and chat with amazing people like you!",
+    "My job is to make your day better by having interesting conversations with you. 😊",
+    "I have the pleasure of working at a charming restaurant, where I help serve delicious meals to our guests. 🍽️",
+    "I'm employed at a bookstore, surrounded by the world of literature and knowledge. 📚",
+    "I work as a tour guide in a virtual world, exploring new places and experiences with people like you! 🌍",
+  ],
   Joke: [
     "Sure thing! Here's a joke: Why did the scarecrow win an award? Because he was outstanding in his field! 😄",
     "I've got a good one: What's orange and sounds like a parrot? A carrot! 🥕",

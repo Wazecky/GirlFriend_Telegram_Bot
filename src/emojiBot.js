@@ -18,6 +18,7 @@ const emojiMap = {
   '🌟': 'excitement',
   '💔': 'sadness',
   '😢': 'tearful',
+  '😭': 'tearful',
   '😠': 'anger',
   '😱': 'surprise',
   '😴': 'sleepy',
