@@ -15,6 +15,7 @@ const { getrawSmallTalkResponse } = require('./rawsmallTalk');
 const error = require('./error');
 const { getSmallTalkResponse } = require('./smallTalk');
 
+const sentMedia = [];
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.start((ctx) => {
   ctx.reply(
@@ -45,6 +46,18 @@ const videoCaptions = [
   // Add more captions as needed
 ];
 
+const picturePaths = [
+  'B:/Chatbot/Sara Diaz/pic1.jpg',
+  'B:/Chatbot/Sara Diaz/pic2.jpg',
+  // Add more picture paths as needed
+];
+
+const videoPaths = [
+  'B:/Chatbot/Sara Diaz/vid1.mp4',
+  'B:/Chatbot/Sara Diaz/vid2.mp4',
+  // Add more video paths as needed
+];
+
 
 // Define arrays of keywords for photos and videos
 const photoKeywords = ['picture', 'image', 'pic', 'foto', 'snapshot', 'visual', 'photo'];
@@ -56,41 +69,59 @@ bot.on('text', async (ctx) => {
   const msg = ctx.message.text;
   const lowercaseMsg = msg.toLowerCase();
 
-  // Check if the user explicitly requests a photo
+// Check if the user explicitly requests media (photo or video)
+if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword)) || videoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
+  let mediaPaths;
+  let caption;
+
   if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
-    // Send a photo with a caption
-    const captionIndex = conversationContext[`${ctx.chat.id}_photo_counter`] || 0;
-    const caption = photoCaptions[captionIndex % photoCaptions.length];
-    ctx.replyWithPhoto({
-      source: 'B:/Chatbot/Sara Diaz/pic1.jpg', // Replace with your local image path
-    }, {
-      caption,
-    });
-    // Update the conversation context to indicate a new photo has been sent
-    conversationContext[`${ctx.chat.id}_photo_counter`] = captionIndex + 1;
-    return; // Exit the function after responding with a photo
+    // User requested a photo
+    mediaPaths = picturePaths;
+    caption = photoCaptions;
+  } else {
+    // User requested a video
+    mediaPaths = videoPaths;
+    caption = videoCaptions;
   }
 
-  // Check if a picture or video has already been sent in this conversation
-  if (conversationContext[ctx.chat.id] === 'photo') {
-    // If a photo has already been sent, check if the user wants another one
-    if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
-      // Send another photo with a different caption
-      const captionIndex = conversationContext[`${ctx.chat.id}_photo_counter`] || 0;
-      const caption = photoCaptions[captionIndex % photoCaptions.length];
-      ctx.replyWithPhoto({
-        source: 'B:/Chatbot/Sara Diaz/pic1.jpg', // Replace with your local image path
-      }, {
-        caption,
-      });
-      // Update the conversation context to indicate a new photo has been sent
-      conversationContext[`${ctx.chat.id}_photo_counter`] = captionIndex + 1;
-      return; // Exit the function after responding with a photo
-    } else {
-      // Clear the conversation context if the user doesn't request another photo
-      conversationContext[ctx.chat.id] = null;
+  // Filter out media that has already been sent
+  const availableMediaPaths = mediaPaths.filter(path => !sentMedia.includes(path));
+
+  if (availableMediaPaths.length === 0) {
+    // All media has been sent, reset the history
+    sentMedia.length = 0;
+  } else {
+    // Select a random media path and caption from the available media
+    const mediaIndex = Math.floor(Math.random() * availableMediaPaths.length);
+    const selectedMediaPath = availableMediaPaths[mediaIndex];
+    const selectedCaption = caption[mediaPaths.indexOf(selectedMediaPath) % caption.length];
+
+    if (selectedMediaPath) {
+      if (mediaPaths === picturePaths) {
+        // Send a photo with the selected caption
+        ctx.replyWithPhoto({
+          source: selectedMediaPath,
+        }, {
+          caption: selectedCaption,
+        });
+      } else {
+        // Send a video with the selected caption
+        ctx.reply("Working on your video...");
+        ctx.replyWithVideo({
+          source: selectedMediaPath,
+        }, {
+          caption: selectedCaption,
+        });
+      }
+
+      // Add the sent media to the history
+      sentMedia.push(selectedMediaPath);
+
+      return; // Exit the function after responding with media
     }
   }
+}
+
 
   // Continue with the rest of the code
   const wit = await witResponse(msg); // Get Wit.ai response
