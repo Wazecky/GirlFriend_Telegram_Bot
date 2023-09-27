@@ -573,29 +573,29 @@ const videoCaptions = [
 ];
 
 const picturePaths = [
-  'B:/Chatbot/Sara Diaz/pic.jpeg',
-  'B:/Chatbot/Sara Diaz/pic1.jpeg',
-  'B:/Chatbot/Sara Diaz/pic2.jpeg',
-  'B:/Chatbot/Sara Diaz/pic3.jpeg',
-  'B:/Chatbot/Sara Diaz/pic4.jpeg',
-  'B:/Chatbot/Sara Diaz/pic5.jpeg',
-  'B:/Chatbot/Sara Diaz/pic6.jpeg',
-  'B:/Chatbot/Sara Diaz/pic7.jpeg',
-  'B:/Chatbot/Sara Diaz/pic8.jpeg',
-  'B:/Chatbot/Sara Diaz/pic9.jpeg',
-  'B:/Chatbot/Sara Diaz/pic10.jpeg',
-  'B:/Chatbot/Sara Diaz/pic11.jpeg',
-  'B:/Chatbot/Sara Diaz/pic12.jpeg',
-  'B:/Chatbot/Sara Diaz/pic13.jpeg',
-  'B:/Chatbot/Sara Diaz/pic14.jpeg',
-  'B:/Chatbot/Sara Diaz/pic15.jpeg',
-  'B:/Chatbot/Sara Diaz/pic16.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic1.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic2.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic3.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic4.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic5.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic6.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic7.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic8.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic9.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic10.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic11.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic12.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic13.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic14.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic15.jpeg',
+  'B:/Chatbot/Sara Diaz/photos/pic16.jpeg',
   // Add more picture paths as needed
 ];
 
 const videoPaths = [
-  'B:/Chatbot/Sara Diaz/vid1.mp4',
-  'B:/Chatbot/Sara Diaz/vid2.mp4',
+  'B:/Chatbot/Sara Diaz/videos/vid1.mp4',
+  'B:/Chatbot/Sara Diaz/videos/vid2.mp4',
   // Add more video paths as needed
 ];
 
