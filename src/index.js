@@ -19,7 +19,7 @@ const sentMedia = [];
 const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.start((ctx) => {
   ctx.reply(
-    "It's your your girlfriend Sara Diaz! \n\n /reset to reset the conversation \n /topup to top-up credit \n\n Automatic transactions: \n /connect and /disconnect your payment method \n /autocharge to enable or disable autocharge (5€ per voice message) \n /send to automatically gift 10€ \n\n How to get started? \n Type /topup to top-up credit \n Or /connect your payment method and enable /autocharge \n\n By using this chatbot, you confirm that you are 18 or older🔞"
+    "It's your your girlfriend Sara Diaz! \n\n /reset to reset the conversation \n /topup to top-up credit \n\n Automatic transactions: \n /connect and /disconnect your payment method \n /autocharge to enable or disable autocharge (5€ per voice message) \n /send to automatically gift 10€ \n\n How to get started? \n Type /topup to top-up credit \n Or /connect your payment method and enable /autocharge \n\n By using this chatbot, you confirm that you are 18 or older🔞\nNote: This bot is Al-based, intended for entertainment, and may generate unexpected or explicit content. Use responsibly and prioritize real-life interactions. The creators assume no liability for use."
   );
   ctx.reply(
     'Hey darling, thank you so much for taking the time to talk with me, how are you doing today? 😊'
@@ -607,8 +607,15 @@ const videoKeywords = ['video', 'clip', 'movie'];
 // ...
 
 bot.on('text', async (ctx) => {
+  const chatId = ctx.chat.id;
   const msg = ctx.message.text;
   const lowercaseMsg = msg.toLowerCase();
+
+  // Show typing indicator before processing
+  await ctx.telegram.sendChatAction(chatId, 'typing');
+
+  // Simulate typing delay
+  await new Promise((resolve) => setTimeout(resolve, 1500)); // Delay for 2 seconds (adjust as needed)
 
 // Check if the user explicitly requests media (photo or video)
 if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword)) || videoKeywords.some(keyword => lowercaseMsg.includes(keyword))) {
@@ -740,14 +747,14 @@ if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword)) || videoKeywor
               
               // Compose the response message
               const errorMessage = error.handleMessage(); // Replace this with your error message retrieval logic
-              const responseMessage = `Hello dear one, your request is: "${msg}"\n\n${errorMessage} Or type MENU to access services.`;
+              const responseMessage = `Hello dear one, your request is: "${msg}"\n\n${errorMessage} Or send the word 'menu' or click /menu to access services.`;
             
-              // Reply to the user with the composed message
-              ctx.reply(responseMessage);
-            }
-                        
-
+              // Reply to the user with the composed message, setting reply_to_message_id
+              ctx.reply(responseMessage, { reply_to_message_id: ctx.message.message_id });
+            } else {
+                          
             ctx.reply(reply);
+            }
           }
         }
       }

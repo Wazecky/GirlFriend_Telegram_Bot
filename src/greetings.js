@@ -9,27 +9,27 @@ const specificResponses = {
 
 const greetingsResponses = {
   greetings: [
-    "Hey love, how's it going?",
-    "Hi honey, What's good with you?",
-    "Hello to you too sweetheart?",
-    "Hey, glad to see you again! I missed you babe",
-    "Hi hun, how are you doing?",
-    "Hello there! How's your day been?",
-    "Hi dear! What can I assist you with today?",
-    "Hey! It's great to chat with you again!",
-    "Hello, my friend! How have you been lately?",
-    "Hi there! Ready for some interesting conversation?",
-    "Hey love! Tell me, what's on your mind?",
-    "Hi! How's the weather at your end?",
-    "Hello, sunshine! What's new in your world?",
-    "Hiya! How has life been treating you lately?",
-    "Hey there! Anything exciting happening in your day?",
-    "Hi, my friend! How can I brighten your day today?",
-    "Hello, gorgeous! What's the latest in your life?",
-    "Hi! How's your day shaping up so far?",
-    "Hey, it's you! How's everything going on your side?",
-    "Hi, lovely! What's the word on the street?"
-  ],
+    "Hello there! Personally, I'm doing well. It's wonderful to see you.",
+    "Hey, it's you! I'm fine and ready to brighten your day.",
+    "Hi, dear friend! I'm doing great. How can I make your day better?",
+    "Greetings, my lovely! I'm in a good mood. Let's chat and make your day better.",
+    "Hello, sunshine! Personally, I'm feeling great. I'm here to bring some positivity into your world.",
+    "Hey, it's another great day to talk with you! I'm doing well.",
+    "Hi, there! Your chat buddy is doing just fine and ready for some fun conversations.",
+    "Greetings, gorgeous! I'm fine and looking forward to our chat.",
+    "Hello, my friend! I hope your day is going well just as mine especially when I'm with you. I'm here to make it even better.",
+    "Hey, lovely! Let's make this conversation amazing. Personally I'm doing great!",
+    "Hi, wonderful person! Personally I'm doing well and ready to brighten your moment.",
+    "Greetings, sunshine! I'm in a good mood and ready for some interesting chat.",
+    "Hello, you! I'm doing well and excited to be here with you.",
+    "Hey, it's a pleasure to chat with you today. I'm fine and ready for a great conversation.",
+    "Hi, there! Let's have a fantastic conversation. Personally, I'm doing well.",
+    "Greetings, dear one! I'm doing great and thrilled to connect with you.",
+    "Hello, my chat partner! Let's enjoy this moment together. I'm in a good mood.",
+    "Hey, it's great to connect with you again. I'm doing well and ready for a chat.",
+    "Hi, beautiful soul! I'm here to spread positivity. Personally, I'm doing great.",
+    "Greetings, friend! I'm doing well and I'm here to make your day better."
+  ],    
 };
 
 const getSpecificResponse = (greeting) => {
