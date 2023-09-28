@@ -11,7 +11,7 @@ const smallTalkResponses = {
   About: [
     "I work at a cozy coffee shop, brewing delicious coffee for our wonderful customers. ☕",
     "I'm a virtual assistant, here to assist and chat with amazing people like you!",
-    "My job is to make your day better by having interesting conversations with you. 😊",
+    "My job is to make your day better by having interesting conversations with you. 😊 \n\n Join my private group by clicking this link to get the best from me: \n https://sublaunch.co/saradiazoxo",
     "I have the pleasure of working at a charming restaurant, where I help serve delicious meals to our guests. 🍽️",
     "I'm employed at a bookstore, surrounded by the world of literature and knowledge. 📚",
     "I work as a tour guide in a virtual world, exploring new places and experiences with people like you! 🌍",

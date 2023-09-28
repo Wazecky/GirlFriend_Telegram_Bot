@@ -747,7 +747,7 @@ if (photoKeywords.some(keyword => lowercaseMsg.includes(keyword)) || videoKeywor
               
               // Compose the response message
               const errorMessage = error.handleMessage(); // Replace this with your error message retrieval logic
-              const responseMessage = `Hello dear one, your request is: "${msg}"\n\n${errorMessage} Or send the word 'menu' or click /menu to access services.`;
+              const responseMessage = `Hello dear one, your typed: "${msg}"\n\n${errorMessage} Or send the word 'menu' or click /menu to access services.\n\n You can as well join my private group by clicking this link to get the best from me: \n https://sublaunch.co/saradiazoxo`;
             
               // Reply to the user with the composed message, setting reply_to_message_id
               ctx.reply(responseMessage, { reply_to_message_id: ctx.message.message_id });

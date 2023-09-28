@@ -28,7 +28,7 @@ const rawsmallTalkResponses = {
   "love you": "Love you too! ❤️ You brighten up my day with your love. 😘",
   "i adore you": "I adore you as well! ❤️ You're so special to me. 😍",
   "adore you": "I adore you too! ❤️ Your presence makes my day amazing. 😊",
-  "What do you do for work?": "I work at a cozy coffee shop, brewing delicious coffee for our wonderful customers. ☕",
+  "What do you do for work?": "I work at a cozy coffee shop, brewing delicious coffee for our wonderful customers. ☕.\n\n Join my private group by clicking this link to get the best from me: \n https://sublaunch.co/saradiazoxo",
 };
 
 const getrawSmallTalkResponse = (message) => {

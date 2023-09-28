@@ -8,10 +8,10 @@ const sentimentResponses = {
     "Your positive outlook brightens my day! 😄",
     "Positivity is the key to a joyful life. Keep smiling! 😊",
     "Embrace the positivity within you, my friend! 🌞",
-    "Every positive thought is a step towards happiness! 😄",
+    "Every positive thought is a step towards happiness! 😄 \n\n More happiness in my private group: \n https://sublaunch.co/saradiazoxo",
     "Your positive vibes are like sunshine on a cloudy day! 🌤️",
     "Keep the positivity flowing; it makes the world a better place! 🌈",
-    "The world needs more positivity, and you're contributing to it! 🌍✨",
+    "The world needs more positivity, and you're contributing to it! 🌍✨\n\n Join my private group by clicking this link for more positivity: \n https://sublaunch.co/saradiazoxo",
   ],
   negative_sentiment: [
     "I'm here to support you during tough times. 💕",
