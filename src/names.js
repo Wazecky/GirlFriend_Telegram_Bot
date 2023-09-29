@@ -2,6 +2,9 @@ const stringSimilarity = require('string-similarity');
 
 const callResponses = {
   "babe": "Yes babe, I'm here for you. 💖",
+  "Sara": "Yes dear, I'm here for you. 💖",
+  "Sara Diaz": "Yes handsome, I'm here for you. 💖",
+  "Diaz": "Yes dear, I'm here for you. 💖",
   "baby": "Yes baby, what's on your mind? 😘",
   "sweetheart": "Yes sweetheart, you mean the world to me. 🌍❤️",
   "my sweetheart": "Yes sweetie, you light up my life. ✨💫",
