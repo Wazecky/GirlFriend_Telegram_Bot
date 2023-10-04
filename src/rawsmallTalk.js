@@ -21,6 +21,8 @@ const rawsmallTalkResponses = {
   "do you believe in love": "Absolutely! Love is a beautiful thing, just like the connection we share. ❤️",
   "i am fine": "That's great to hear! 😊 Is there anything special you'd like to chat about today?",
   "i'm fine": "That's great to hear! 😊 Is there anything special you'd like to chat about today?",
+  "what is your name?": "I am Sara Diaz, I can chat with you, keep you company, share jokes, provide advice, and more! Just let me know what you'd like to do. 😄",
+  "who are you": "I am Sara Diaz, I can chat with you, keep you company, share jokes, provide advice, and more! Just let me know what you'd like to do. 😄",
   "what can you do": "I can chat with you, keep you company, share jokes, provide advice, and more! Just let me know what you'd like to do. 😄",
   "how can I make you happy": "You're already making me happy by chatting with me! Just be yourself, and we'll have a great time together. 😘",
   "what's on your mind": "I'm always thinking about making our conversations enjoyable and meaningful. Is there anything specific on your mind right now?",

@@ -3,6 +3,7 @@ require("dotenv").config();
 const { Wit, log } = require("node-wit");
 const emojiBot = require("./emojiBot");
 const { Telegraf } = require("telegraf");
+const axios = require("axios");
 const greetingsAndResponses = require("./greetings");
 const { getSentimentResponse } = require("./sentiments");
 const {
@@ -12,11 +13,52 @@ const {
 } = require("./rawsentiments");
 const callResponses = require("./names");
 const { getrawSmallTalkResponse } = require("./rawsmallTalk");
-const error = require("./error");
+//const error = require("./error");
 const { getSmallTalkResponse } = require("./smallTalk");
 
 const sentMedia = [];
 const bot = new Telegraf(process.env.BOT_TOKEN);
+const GPT_TOKEN = process.env.GPT_TOKEN;
+
+async function getChatGptResponse(message) {
+  const url = "https://api.openai.com/v1/engines/text-davinci-003/completions"; // Specify the desired engine here
+  const headers = {
+    Authorization: `Bearer ${GPT_TOKEN}`,
+    "Content-Type": "application/json",
+  };
+  const data = {
+    prompt: message,
+    max_tokens: 50, // Adjust the max_tokens as needed
+  };
+
+  try {
+    const response = await axios.post(url, data, { headers });
+    return response.data.choices[0].text;
+  } catch (error) {
+    console.error(
+      "Error calling OpenAI API:",
+      error.response ? error.response.data : error.message
+    );
+    throw error; // You can handle the error as needed
+  }
+}
+
+async function retryOpenAIRequest(message, maxRetries = 3) {
+  let retries = 0;
+  while (retries < maxRetries) {
+    try {
+      const response = await getChatGptResponse(message);
+      return response;
+    } catch (error) {
+      console.error(`Error calling OpenAI API (Retry ${retries + 1}):`, error.message);
+      retries++;
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for 2 seconds before retrying
+    }
+  }
+  throw new Error('Failed to get a response from OpenAI API after multiple retries.');
+}
+
+
 bot.start((ctx) => {
   ctx.reply(
     "It's your your girlfriend Sara Diaz! \n\n /reset to reset the conversation \n /topup to top-up credit \n\n Automatic transactions: \n /connect and /disconnect your payment method \n /autocharge to enable or disable autocharge (5€ per voice message) \n /send to automatically gift 10€ \n\n How to get started? \n Type /topup to top-up credit \n Or /connect your payment method and enable /autocharge \n\n By using this chatbot, you confirm that you are 18 or older🔞\nNote: This bot is Al-based, intended for entertainment, and may generate unexpected or explicit content. Use responsibly and prioritize real-life interactions. The creators assume no liability for use."
@@ -1046,16 +1088,20 @@ bot.on("text", async (ctx) => {
             );
 
             if (!reply) {
-              // Handle the case where the bot doesn't have a specific response
+              // Generate a response from ChatGPT using the retryOpenAIRequest function
+              try {
+                const response = await retryOpenAIRequest(msg); // Use the retryOpenAIRequest function here
 
-              // Compose the response message
-              const errorMessage = error.handleMessage(); // Replace this with your error message retrieval logic
-              const responseMessage = `Hello dear one, your typed: "${msg}"\n\n${errorMessage} Or send the word 'menu' or click /menu to access services.\n\n You can as well join my private group by clicking this link to get the best from me: \n https://sublaunch.co/saradiazoxo`;
+                // Send the ChatGPT response to the user
+                ctx.reply(response);
+              } catch (error) {
+                console.error("Error generating ChatGPT response:", error);
 
-              // Reply to the user with the composed message, setting reply_to_message_id
-              ctx.reply(responseMessage, {
-                reply_to_message_id: ctx.message.message_id,
-              });
+                // Handle the error gracefully
+                ctx.reply(
+                  "Oops! Something went wrong. Please try again later."
+                );
+              }
             } else {
               ctx.reply(reply);
             }
