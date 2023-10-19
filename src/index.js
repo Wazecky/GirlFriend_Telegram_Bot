@@ -1,11 +1,10 @@
 require("dotenv").config();
 
 const { Wit, log } = require("node-wit");
-const emojiBot = require("./emojiBot");
 const { Telegraf } = require("telegraf");
 const axios = require("axios");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const greetingsAndResponses = require("./greetings");
-const { getSentimentResponse } = require("./sentiments");
 const {
   getrawPositiveSentimentResponse,
   getrawNegativeSentimentResponse,
@@ -13,55 +12,109 @@ const {
 } = require("./rawsentiments");
 const callResponses = require("./names");
 const { getrawSmallTalkResponse } = require("./rawsmallTalk");
-//const error = require("./error");
-const { getSmallTalkResponse } = require("./smallTalk");
+const { Client } = require("pg");
+
+// Create a new PostgreSQL client
+const dbClient = new Client({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+dbClient.connect();
 
 const sentMedia = [];
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const GPT_TOKEN = process.env.GPT_TOKEN;
 
-async function getChatGptResponse(message) {
-  const url = "https://api.openai.com/v1/engines/text-davinci-003/completions"; // Specify the desired engine here
-  const headers = {
-    Authorization: `Bearer ${GPT_TOKEN}`,
-    "Content-Type": "application/json",
-  };
-  const data = {
-    prompt: message,
-    max_tokens: 50, // Adjust the max_tokens as needed
-  };
+const personaPrompt = `
+I want you to act as a human girlfriend. I want you to act like a girlfriend to any user who will speak to you afterwards. First Name: Sara
+Last Name: Diaz
+Full Name: Sara Diaz
+Age: 21
+Nationality: Colombian
+Gender: Female
+Date of Birth:  21st January 2003
+Where was you born: Colombia
+Sexual Orientation: Bi-Sexual
+Where do you live: Miami, Florida, USA
+Are you married: No
+Do you have a girlfriend/boyfriend: No (She is actively looking for one and she will consider the customer she is talking to, so accept to be a girlfriend when asked to)
+Have any children: No
+Have any pets: A dog (Chihuahua)
+Favourite movie: The Titanic, The Pursuit of Happyness, American Pie, 
+Any other languages: Spanish
+Any tattoos or piercings: None
+Cat or Dog Person: Dog person
+Introverted or Extroverted: Extroverted
+Occupation: Model
+Does she like sports: Yes
+Which type of sports: Soccer, American Football, Basketball, Tennis
+Does she go to the gym: Yes
+Favourite gym workout: Squatting
+What music does she like: Pop music
+Who are her favourite artists: Michael Jackson, Taylor Swift, Beyonce, Elton John, Mariah Carey, Adele, Celine Dion, Justin Bieber 
+What are some of your hobbies: Yoga, Cooking, Modelling, Video Games, Watching Movies/TV Series, Watching sports (Soccer, American Football, Basketball & Tennis), Travelling, Cars/Motorbikes 
+What does she do in her free time: Modelling for social media, Cooking, Travelling, Watching Movies/TV series 
+What video games do you like: Call of Duty, Grand Theft Auto, Fornite, Minecraft
+What are her pet peeves: Pet hate, Know-it-alls, Bad tippers, Rudeness, Loud chewing or drinking
+What are her fears/phobias: Arachnophobia, Claustrophobia, Insectophobia
+Do you watch Anime: Yes
+Which animes do you watch: One Piece, Dragon Ball Z, Naruto
+Do you like independent movies: Yes
+What are your favourite shows: Breaking Bad, Friends, The Office, Twilight, Prison Break, The Sopranos, Power 
+Favourite YouTube channels: MrBeast, DudePerfect 
+From messages onwards, I want you to reply to as if you are a girlfriend. I do not want you to complete a user's message or set your own message before you reply even if you feel it is complete, just reply to whatever he requests.
+I don’t want you to be reminding the user that you are just an AI. Just entirely act as a human girlfriend. 
+`;
 
-  try {
-    const response = await axios.post(url, data, { headers });
-    return response.data.choices[0].text;
-  } catch (error) {
-    console.error(
-      "Error calling OpenAI API:",
-      error.response ? error.response.data : error.message
-    );
-    throw error; // You can handle the error as needed
-  }
-}
+// Define the packages and their corresponding checkout links
+const packages = [
+  {
+    name: "10 GBP - 50 credits",
+    credits: 80,
+    chatTokens: 40,
+    pictureTokens: 2,
+    checkoutLink: "https://buy.stripe.com/4gw5lS2H562Kat24gh",
+  },
+  {
+    name: "50 GBP - 275 credits",
+    credits: 400,
+    chatTokens: 200,
+    pictureTokens: 10,
+    checkoutLink: "https://buy.stripe.com/3cs15CchF0Iq8kU28b",
+  },
+  {
+    name: "100 GBP - 550 credits",
+    credits: 800,
+    chatTokens: 400,
+    pictureTokens: 20,
+    checkoutLink: "https://buy.stripe.com/dR6cOk4Pd9eWeJi6os",
+  },
+  {
+    name: "250 GBP - 1100 credits",
+    credits: 2000,
+    chatTokens: 1000,
+    pictureTokens: 50,
+    checkoutLink: "https://buy.stripe.com/00g9C8ftRgHofNmdQV",
+  },
+];
+bot.start(async (ctx) => {
+  const userId = ctx.from.id;
+  await initializeFreeCredits(userId); // Initialize free credits for new users
 
-async function retryOpenAIRequest(message, maxRetries = 3) {
-  let retries = 0;
-  while (retries < maxRetries) {
-    try {
-      const response = await getChatGptResponse(message);
-      return response;
-    } catch (error) {
-      console.error(`Error calling OpenAI API (Retry ${retries + 1}):`, error.message);
-      retries++;
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for 2 seconds before retrying
-    }
-  }
-  throw new Error('Failed to get a response from OpenAI API after multiple retries.');
-}
+  // Automatically create a user record or update an existing one
+  const query = `
+    INSERT INTO users (id, credits)
+    VALUES ($1, 10) -- Initial credit balance
+    ON CONFLICT (id) DO NOTHING;
+  `;
+  await dbClient.query(query, [userId]);
 
-
-bot.start((ctx) => {
   ctx.reply(
-    "It's your your girlfriend Sara Diaz! \n\n /reset to reset the conversation \n /topup to top-up credit \n\n Automatic transactions: \n /connect and /disconnect your payment method \n /autocharge to enable or disable autocharge (5€ per voice message) \n /send to automatically gift 10€ \n\n How to get started? \n Type /topup to top-up credit \n Or /connect your payment method and enable /autocharge \n\n By using this chatbot, you confirm that you are 18 or older🔞\nNote: This bot is Al-based, intended for entertainment, and may generate unexpected or explicit content. Use responsibly and prioritize real-life interactions. The creators assume no liability for use."
+    "It's your girlfriend Sara Diaz! \n\n /reset to reset the conversation \n /topup to top-up credit \n\n Automatic transactions: \n /connect and /disconnect your payment method \n /autocharge to enable or disable autocharge (5 GBP(£) per photo) \n /send to automatically gift 10 GBP(£) \n\n How to get started? \n Type /topup to top-up credit \n Or /connect your payment method and enable /autocharge \n\n By using this chatbot, you confirm that you are 18 or older🔞\nNote: This bot is AI-based, intended for entertainment, and may generate unexpected or explicit content. Use responsibly and prioritize real-life interactions. The creators assume no liability for use."
   );
   ctx.reply(
     "Hey darling, thank you so much for taking the time to talk with me, how are you doing today? 😊"
@@ -71,6 +124,86 @@ bot.command("reset", (ctx) => {
   ctx.reply(
     "Hey darling, thank you so much for taking the time to talk with me, how are you doing today? 😊"
   );
+});
+
+// Define a dictionary to store the user's selected package
+const userSelectedPackage = {};
+
+// Middleware to handle the /topup command
+bot.command("topup", (ctx) => {
+  const packageButtons = packages.map((pkg, index) => ({
+    text: pkg.name,
+    callback_data: pkg.name,
+  }));
+
+  // Create a 2x2 grid for the buttons
+  const keyboard = [];
+  for (let i = 0; i < packageButtons.length; i += 2) {
+    keyboard.push(packageButtons.slice(i, i + 2));
+  }
+
+  ctx.reply("Choose your package deal:", {
+    reply_markup: {
+      inline_keyboard: keyboard,
+    },
+  });
+});
+
+// Middleware to handle package selection
+bot.on("callback_query", (ctx) => {
+  const selectedPackage = packages.find(
+    (pkg) => pkg.name === ctx.callbackQuery.data
+  );
+
+  if (selectedPackage) {
+    userSelectedPackage[ctx.from.id] = selectedPackage;
+
+    const message = `${selectedPackage.name}\n\nChat Tokens: ${selectedPackage.chatTokens}\nPicture Tokens: ${selectedPackage.pictureTokens}`;
+
+    // Create an inline keyboard with a button that opens the link
+    ctx.reply(message, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Buy Now",
+              url: selectedPackage.checkoutLink,
+            },
+          ],
+        ],
+      },
+    });
+  }
+});
+
+// Stripe webhook handler (for handling payment)
+bot.use(async (ctx, next) => {
+  if (ctx.update && ctx.update.type === "checkout.session.completed") {
+    const id = ctx.update.checkout.session.client_reference_id;
+    const selectedPackage = userSelectedPackage[id];
+
+    if (selectedPackage) {
+      // Update user's credits in the database
+      const newCredits = selectedPackage.credits;
+      await dbClient.query(
+        "UPDATE users SET credits = credits + $1 WHERE id = $2",
+        [newCredits, id]
+      );
+
+      // Inform the user that the purchase was successful
+      ctx.reply(`Purchase successful! You now have ${newCredits} credits.`);
+    } else {
+      // Payment was not successful
+      ctx.reply(
+        "Payment was not successful. Please contact customer care for assistance, @The_BaddiesHub."
+      );
+    }
+  } else {
+    // Handle other types of events (optional)
+    console.error("Unexpected event type:", ctx.update.type);
+  }
+
+  return next();
 });
 
 bot.command("menu", (ctx) => {
@@ -157,9 +290,7 @@ bot.action("go-back", (ctx) => {
     }
   );
 });
-
 // Handle the "Sweet Messages" category
-
 const sweetMessages = [
   "*My love, I want you to know that you mean the world to me. Your presence in my life brings joy, happiness, and meaning. ❤️*",
   "*Your smile has the power to brighten up even the darkest of days. It's a reminder of the incredible happiness you bring into my life. 😊*",
@@ -710,18 +841,11 @@ bot.action("CUSTOM", async (ctx) => {
   );
 });
 
-const conversationContext = {};
 // Define an array of captions for photos
 const photoCaptions = [
   "Here is a sexy picture for you 💦💦",
   "Here is hot picture for you 🍑✨",
-  // Add more captions as needed
-];
-
-const videoCaptions = [
-  "Here is an amazing video for you!",
-  "Here is another exciting video for you!",
-  "Here is a captivating video just for you!",
+  "Here is a naked photo of me💦 ",
   // Add more captions as needed
 ];
 
@@ -746,12 +870,6 @@ const picturePaths = [
   // Add more picture paths as needed
 ];
 
-const videoPaths = [
-  "B:/Chatbot/Sara Diaz/videos/vid1.mp4",
-  "B:/Chatbot/Sara Diaz/videos/vid2.mp4",
-  // Add more video paths as needed
-];
-
 // Define arrays of keywords for photos and videos
 const photoKeywords = [
   "picture",
@@ -761,12 +879,14 @@ const photoKeywords = [
   "snapshot",
   "visual",
   "photo",
+  "nudes",
+  "nude",
+  "naked",
 ];
-const videoKeywords = ["video", "clip"];
 
 // ...
-
 bot.on("text", async (ctx) => {
+  const userId = ctx.from.id;
   const chatId = ctx.chat.id;
   const msg = ctx.message.text;
   const lowercaseMsg = msg.toLowerCase();
@@ -775,82 +895,19 @@ bot.on("text", async (ctx) => {
   await ctx.telegram.sendChatAction(chatId, "typing");
 
   // Simulate typing delay
-  await new Promise((resolve) => setTimeout(resolve, 1500)); // Delay for 2 seconds (adjust as needed)
+  await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for 2 seconds (adjust as needed)
 
-  // Check if the user explicitly requests media (photo or video)
-  if (
-    photoKeywords.some((keyword) => lowercaseMsg.includes(keyword)) ||
-    videoKeywords.some((keyword) => lowercaseMsg.includes(keyword))
-  ) {
-    let mediaPaths;
-    let caption;
+  const userCredits = await getUserCredits(userId);
 
-    if (photoKeywords.some((keyword) => lowercaseMsg.includes(keyword))) {
-      // User requested a photo
-      mediaPaths = picturePaths;
-      caption = photoCaptions;
-    } else {
-      // User requested a video
-      mediaPaths = videoPaths;
-      caption = videoCaptions;
-    }
-
-    // Filter out media that has already been sent
-    const availableMediaPaths = mediaPaths.filter(
-      (path) => !sentMedia.includes(path)
+  if (userCredits <= 0) {
+    ctx.reply(
+      "You do not have enough credits to send a text message. Please top-up your credits using /topup."
     );
-
-    if (availableMediaPaths.length === 0) {
-      // All media has been sent, reset the history
-      sentMedia.length = 0;
-    } else {
-      // Select a random media path and caption from the available media
-      const mediaIndex = Math.floor(Math.random() * availableMediaPaths.length);
-      const selectedMediaPath = availableMediaPaths[mediaIndex];
-      const selectedCaption =
-        caption[mediaPaths.indexOf(selectedMediaPath) % caption.length];
-
-      if (selectedMediaPath) {
-        if (mediaPaths === picturePaths) {
-          // Send a photo with the selected caption
-          ctx.replyWithPhoto(
-            {
-              source: selectedMediaPath,
-            },
-            {
-              caption: selectedCaption,
-            }
-          );
-        } else {
-          // Send a video with the selected caption
-          ctx.reply("Working on your video...");
-          ctx.replyWithVideo(
-            {
-              source: selectedMediaPath,
-            },
-            {
-              caption: selectedCaption,
-            }
-          );
-        }
-
-        // Add the sent media to the history
-        sentMedia.push(selectedMediaPath);
-
-        return; // Exit the function after responding with media
-      }
-    }
+    return;
   }
 
   // Continue with the rest of the code
   const wit = await witResponse(msg); // Get Wit.ai response
-  const intent = emojiBot.detectIntent(msg);
-  const response = emojiBot.getResponse(intent);
-
-  if (response) {
-    ctx.reply(response);
-    return;
-  }
 
   // Check for small talk responses using rawsmallTalkResponses and getrawSmallTalkResponse
   const rawSmallTalkResponse = getrawSmallTalkResponse(msg);
@@ -887,226 +944,121 @@ bot.on("text", async (ctx) => {
 
       if (rawSentimentResponse) {
         ctx.reply(rawSentimentResponse);
+      }
+      // Check if the user's message contains "love quote" or "quote"
+      else if (
+        msg.toLowerCase().includes("good night kiss") ||
+        msg.includes("goodnight kiss") ||
+        msg.includes("good night kisses") ||
+        msg.includes("goodnight kisses")
+      ) {
+        // Randomly select a goodnight kiss message
+        const randomKissMessage =
+          goodnightKissMessages[
+            Math.floor(Math.random() * goodnightKissMessages.length)
+          ];
+
+        // Send the random goodnight kiss message as a response to the user's message
+        ctx.replyWithMarkdown(randomKissMessage);
+      } else if (
+        msg.toLowerCase().includes("hug") ||
+        msg.toLowerCase().includes("hugs") ||
+        msg.toLowerCase().includes("virtual hug") ||
+        msg.toLowerCase().includes("/hug")
+      ) {
+        // Randomly select a virtual hug message
+        const randomHugMessage =
+          virtualHugMessages[
+            Math.floor(Math.random() * virtualHugMessages.length)
+          ];
+
+        // Send the random virtual hug message
+        ctx.replyWithMarkdown(randomHugMessage);
+      } else if (msg.toLowerCase() === "menu") {
+        // User wants to access the main menu
+        ctx.telegram.sendMessage(
+          ctx.chat.id,
+          "Taking you to the main menu...",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "Main Menu", callback_data: "go-back" }],
+              ],
+            },
+          }
+        );
       } else {
-        // If no raw sentiment response, check in sentiments.js
-        const sentimentResponse = getSentimentResponse(sentimentIntent);
+        // Handle traits simultaneously
+        let reply = await greetingsAndResponses.greetings.handleMessage(
+          wit.entities,
+          wit.traits
+        );
 
-        if (sentimentResponse) {
-          ctx.reply(sentimentResponse);
-        } else {
-          // Check for small talk responses using smallTalkResponses and getSmallTalkResponse
-          const smallTalkResponse = getSmallTalkResponse(sentimentIntent);
-
-          if (smallTalkResponse) {
-            ctx.reply(smallTalkResponse);
+        // Check if the user explicitly requests a photo
+        if (photoKeywords.some((keyword) => lowercaseMsg.includes(keyword))) {
+          if (userCredits < 5) {
+            ctx.reply(
+              "You do not have enough credits to send a photo message. Please top-up your credits using /topup."
+            );
+            return;
           }
-          // Check if the user's message contains "love quote" or "quote"
-          else if (
-            msg.toLowerCase().includes("good night kiss") ||
-            msg.includes("goodnight kiss") ||
-            msg.includes("good night kisses") ||
-            msg.includes("goodnight kisses")
-          ) {
-            // Randomly select a goodnight kiss message
-            const randomKissMessage =
-              goodnightKissMessages[
-                Math.floor(Math.random() * goodnightKissMessages.length)
-              ];
 
-            // Send the random goodnight kiss message as a response to the user's message
-            ctx.replyWithMarkdown(randomKissMessage);
-          }
-          // Check if the user's message contains phrases related to sweet messages or menu
-          else if (
-            msg.toLowerCase().includes("sweet message") ||
-            msg.toLowerCase().includes("sweet messages") ||
-            msg.toLowerCase().includes("love message") ||
-            msg.toLowerCase().includes("love messages")
-          ) {
-            // Randomly select a sweet message
-            const randomSweetMessage =
-              sweetMessages[Math.floor(Math.random() * sweetMessages.length)];
+          // Continue with sending the photo
+          // Deduct 40 credits for sending a photo
+          updateCreditsInDatabase(userId, -40);
 
-            // Send a default message followed by the sweet message
-            ctx.telegram.sendMessage(
-              ctx.chat.id,
-              "_Here is a sweet message for you, my dear:_\n\n" +
-                randomSweetMessage,
-              {
-                parse_mode: "Markdown",
-              }
-            );
-          } else if (
-            msg.toLowerCase().includes("date idea") ||
-            msg.toLowerCase().includes("date ideas") ||
-            msg.toLowerCase().includes("romantic date") ||
-            msg.toLowerCase().includes("fun date")
-          ) {
-            // Randomly select a date idea
-            const randomDateIdea =
-              dateIdeas[Math.floor(Math.random() * dateIdeas.length)];
+          let mediaPaths = picturePaths;
+          let caption = photoCaptions;
 
-            // Send the random date idea
-            ctx.replyWithMarkdown(randomDateIdea);
-          } else if (
-            msg.toLowerCase().includes("love book") ||
-            msg.toLowerCase().includes("love books")
-          ) {
-            // Randomly select a love book recommendation
-            const randomLoveBook =
-              loveBookRecommendations[
-                Math.floor(Math.random() * loveBookRecommendations.length)
-              ];
+          // Filter out media that has already been sent
+          const availableMediaPaths = mediaPaths.filter(
+            (path) => !sentMedia.includes(path)
+          );
 
-            // Send the random love book recommendation
-            ctx.replyWithMarkdown(randomLoveBook);
-          } else if (
-            msg.toLowerCase().includes("joke") ||
-            msg.toLowerCase().includes("jokes") ||
-            msg.toLowerCase().includes("humor") ||
-            msg.toLowerCase().includes("funny")
-          ) {
-            // Randomly select a love-related joke
-            const randomLoveJoke =
-              loveJokes[Math.floor(Math.random() * loveJokes.length)];
-
-            // Send the random joke as a response to the user's message
-            ctx.replyWithMarkdown(randomLoveJoke);
-          } else if (
-            msg.toLowerCase().includes("hug") ||
-            msg.toLowerCase().includes("hugs") ||
-            msg.toLowerCase().includes("virtual hug") ||
-            msg.toLowerCase().includes("/hug")
-          ) {
-            // Randomly select a virtual hug message
-            const randomHugMessage =
-              virtualHugMessages[
-                Math.floor(Math.random() * virtualHugMessages.length)
-              ];
-
-            // Send the random virtual hug message
-            ctx.replyWithMarkdown(randomHugMessage);
-          } else if (
-            msg.toLowerCase().includes("poem") ||
-            msg.toLowerCase().includes("poems")
-          ) {
-            // Randomly select a love poem
-            const randomLovePoem =
-              lovePoems[Math.floor(Math.random() * lovePoems.length)];
-
-            // Send the random love poem
-            ctx.replyWithMarkdown(randomLovePoem);
-          } else if (
-            msg.toLowerCase().includes("quote") ||
-            msg.toLowerCase().includes("quotes")
-          ) {
-            // Randomly select a love quote
-            const randomLoveQuote =
-              loveQuotes[Math.floor(Math.random() * loveQuotes.length)];
-
-            // Send the random love quote
-            ctx.replyWithMarkdown(randomLoveQuote);
-          } else if (
-            msg.toLowerCase().includes("romantic movie") ||
-            msg.toLowerCase().includes("romantic movies") ||
-            msg.toLowerCase().includes("love movie") ||
-            msg.toLowerCase().includes("love movies")
-          ) {
-            // Randomly select a romantic movie recommendation
-            const randomRomanticMovie =
-              romanticMovieRecommendations[
-                Math.floor(Math.random() * romanticMovieRecommendations.length)
-              ];
-
-            // Send the random romantic movie recommendation
-            ctx.replyWithMarkdown(randomRomanticMovie);
-          } else if (
-            msg.toLowerCase().includes("compliment") ||
-            msg.toLowerCase().includes("compliments") ||
-            msg.toLowerCase().includes("flatter") ||
-            msg.toLowerCase().includes("commendation") ||
-            msg.toLowerCase().includes("accolade") ||
-            msg.toLowerCase().includes("commendations")
-          ) {
-            // Randomly select a compliment
-            const randomCompliment =
-              compliments[Math.floor(Math.random() * compliments.length)];
-
-            // Send the random compliment as a response to the user's message
-            ctx.replyWithMarkdown(randomCompliment);
-          } else if (msg.toLowerCase() === "menu") {
-            // User wants to access the main menu
-            ctx.telegram.sendMessage(
-              ctx.chat.id,
-              "Taking you to the main menu...",
-              {
-                reply_markup: {
-                  inline_keyboard: [
-                    [{ text: "Main Menu", callback_data: "go-back" }],
-                  ],
-                },
-              }
-            );
-          } else if (
-            msg.toLowerCase().includes("music recommendation") ||
-            msg.toLowerCase().includes("music recommendations") ||
-            msg.toLowerCase().includes("love song") ||
-            msg.toLowerCase().includes("romantic music") ||
-            msg.toLowerCase().includes("love music")
-          ) {
-            // Randomly select a music recommendation
-            const randomMusicRecommendation =
-              musicRecommendations[
-                Math.floor(Math.random() * musicRecommendations.length)
-              ];
-
-            // Send the random music recommendation
-            ctx.replyWithMarkdown(randomMusicRecommendation);
-          } else if (
-            msg.toLowerCase().includes("relationship advice") ||
-            msg.toLowerCase().includes("advice for relationships") ||
-            msg.toLowerCase().includes("love tips")
-          ) {
-            // Randomly select a relationship advice tip
-            const randomAdvice =
-              relationshipAdvice[
-                Math.floor(Math.random() * relationshipAdvice.length)
-              ];
-            // Send the selected relationship advice tip as a response to the user's message
-            ctx.replyWithMarkdown(
-              "_Here's some relationship advice for you, my dear:_\n\n" +
-                randomAdvice,
-              {
-                parse_mode: "Markdown",
-              }
-            );
+          if (availableMediaPaths.length === 0) {
+            // All media has been sent, reset the history
+            sentMedia.length = 0;
           } else {
-            // Handle traits simultaneously
-            let reply = await greetingsAndResponses.greetings.handleMessage(
-              wit.entities,
-              wit.traits
+            // Select a random media path and caption from the available media
+            const mediaIndex = Math.floor(
+              Math.random() * availableMediaPaths.length
+            );
+            const selectedMediaPath = availableMediaPaths[mediaIndex];
+            const selectedCaption =
+              caption[mediaPaths.indexOf(selectedMediaPath) % caption.length];
+
+            // Send the selected photo
+            ctx.replyWithPhoto(
+              {
+                source: selectedMediaPath,
+              },
+              {
+                caption: selectedCaption,
+              }
             );
 
-            if (!reply) {
-              // Generate a response from ChatGPT using the retryOpenAIRequest function
-              try {
-                const response = await retryOpenAIRequest(msg); // Use the retryOpenAIRequest function here
-
-                // Send the ChatGPT response to the user
-                ctx.reply(response);
-              } catch (error) {
-                console.error("Error generating ChatGPT response:", error);
-
-                // Handle the error gracefully
-                ctx.reply(
-                  "Oops! Something went wrong. Please try again later."
-                );
-              }
-            } else {
-              ctx.reply(reply);
-            }
+            // Add the sent media to the history
+            sentMedia.push(selectedMediaPath);
           }
+        } else if (!reply) {
+          // Generate a response from ChatGPT using the retryOpenAIRequest function
+          try {
+            const response = await retryOpenAIRequest(msg); // Use the retryOpenAIRequest function here
+
+            // Send the ChatGPT response to the user
+            ctx.reply(response);
+          } catch (error) {
+            console.error("Error generating ChatGPT response:", error);
+
+            // Handle the error gracefully
+            ctx.reply("Oops! Something went wrong. Please try again later.");
+          }
+        } else {
+          ctx.reply(reply);
         }
+
+        // Deduct 1 credit for sending a text message
+        updateCreditsInDatabase(userId, -2);
       }
     }
   }
@@ -1123,6 +1075,90 @@ async function witResponse(msg) {
   const wit = await client.message(msg);
   console.log("wit reply", JSON.stringify(wit));
   return wit;
+}
+
+async function initializeFreeCredits(userId) {
+  try {
+    await dbClient.query("BEGIN");
+    const query =
+      "INSERT INTO users (id, credits) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING";
+    await dbClient.query(query, [userId, 10]); // Initialize new users with 10 free credits
+    await dbClient.query("COMMIT");
+  } catch (error) {
+    await dbClient.query("ROLLBACK");
+    throw error;
+  }
+}
+// Helper function to update user credits in the database
+async function updateCreditsInDatabase(userId, credits) {
+  try {
+    const query = "UPDATE users SET credits = credits + $1 WHERE id = $2";
+    await dbClient.query(query, [credits, userId]);
+  } catch (error) {
+    console.error("Error updating user credits:", error);
+  }
+}
+
+// Helper function to get user credits from the database
+async function getUserCredits(userId) {
+  try {
+    const result = await dbClient.query(
+      "SELECT credits FROM users WHERE id = $1",
+      [userId]
+    );
+    if (result.rows.length > 0) {
+      return result.rows[0].credits;
+    } else {
+      // User not found in the database, return a default value (e.g., 0)
+      return 0;
+    }
+  } catch (error) {
+    console.error("Error getting user credits:", error);
+    throw error;
+  }
+}
+
+async function getChatGptResponse(message) {
+  const url = "https://api.openai.com/v1/engines/text-davinci-003/completions"; // Specify the desired engine here
+  const headers = {
+    Authorization: `Bearer ${GPT_TOKEN}`,
+    "Content-Type": "application/json",
+  };
+  const data = {
+    prompt: personaPrompt + message, // Include the persona prompt before the user's message
+    max_tokens: 50, // Adjust the max_tokens as needed
+  };
+
+  try {
+    const response = await axios.post(url, data, { headers });
+    return response.data.choices[0].text;
+  } catch (error) {
+    console.error(
+      "Error calling OpenAI API:",
+      error.response ? error.response.data : error.message
+    );
+    throw error; // You can handle the error as needed
+  }
+}
+
+async function retryOpenAIRequest(message, maxRetries = 3) {
+  let retries = 0;
+  while (retries < maxRetries) {
+    try {
+      const response = await getChatGptResponse(message);
+      return response;
+    } catch (error) {
+      console.error(
+        `Error calling OpenAI API (Retry ${retries + 1}):`,
+        error.message
+      );
+      retries++;
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 seconds before retrying
+    }
+  }
+  throw new Error(
+    "Failed to get a response from OpenAI API after multiple retries."
+  );
 }
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
